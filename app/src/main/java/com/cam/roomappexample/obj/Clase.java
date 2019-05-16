@@ -6,7 +6,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Clase {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int _id;
     private String nombre;
     private int credito;
