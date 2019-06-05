@@ -27,5 +27,4 @@ public abstract class DbHorario extends RoomDatabase {
     public static void destroyInstance() {
         INSTANCE = null;
     }
-
 }

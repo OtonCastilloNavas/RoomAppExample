@@ -2,6 +2,7 @@ package com.cam.roomappexample;
 
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -177,7 +178,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        showForm(new ClaseConHorario(),-1);
+        if(item.getItemId()==R.id.mn_agregar)
+            showForm(new ClaseConHorario(),-1);
+        else
+        {
+            Intent intent = new Intent(this,HorarioActivity.class);
+            startActivity(intent);
+        }
         return super.onOptionsItemSelected(item);
     }
 }

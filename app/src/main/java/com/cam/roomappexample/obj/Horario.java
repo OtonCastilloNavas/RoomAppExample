@@ -18,7 +18,6 @@ public class Horario {
     private String lugar;
     private String dia;
     private String hora;
-
     private int id_asignatura;
 
     public Horario() {
