@@ -1,5 +1,6 @@
 package com.cam.roomappexample.adapter;
 
+import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,24 +11,35 @@ import android.widget.TextView;
 
 import com.cam.roomappexample.R;
 import com.cam.roomappexample.obj.Clase;
+import com.cam.roomappexample.pojo.ClaseConHorario;
 
 import java.util.List;
 
 public class RvAdapter extends RecyclerView.Adapter<RvAdapter.ClaseHolder> {
 
-    private List<Clase> claseList;
+    private List<ClaseConHorario> claseList;
 
     private OnClickDeleteItemListener onClickDeleteItemListener;
     private OnClickEditItemListener onClickEditItemListener;
+    private OnClickItemListener onClickItemListener;
 
     public interface OnClickDeleteItemListener
     {
-        void onItemClick(Clase clase, int pos);
+        void onItemClick(ClaseConHorario clase, int pos);
     }
 
     public interface OnClickEditItemListener
     {
+        void onItemClick(ClaseConHorario clase, int pos);
+    }
+
+    public interface OnClickItemListener
+    {
         void onItemClick(Clase clase, int pos);
+    }
+
+    public void setOnClickItemListener(OnClickItemListener onClickItemListener) {
+        this.onClickItemListener = onClickItemListener;
     }
 
     public void setOnClickEditItemListener(OnClickEditItemListener onClickEditItemListener) {
@@ -38,7 +50,7 @@ public class RvAdapter extends RecyclerView.Adapter<RvAdapter.ClaseHolder> {
         this.onClickDeleteItemListener = onClickDeleteItemListener;
     }
 
-    public RvAdapter(List<Clase> claseList) {
+    public RvAdapter(List<ClaseConHorario> claseList) {
         this.claseList = claseList;
     }
 
@@ -52,8 +64,11 @@ public class RvAdapter extends RecyclerView.Adapter<RvAdapter.ClaseHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ClaseHolder claseHolder, int i) {
-        claseHolder.tvNombre.setText(claseList.get(i).getNombre());
-        claseHolder.tvCredito.setText(String.valueOf(claseList.get(i).getCredito()));
+        claseHolder.tvNombre.setText(claseList.get(i).getClase().getNombre());
+        claseHolder.tvCredito.setText(String.valueOf(claseList.get(i).getClase().getCredito()));
+        if(claseList.get(i).getHorarioList()!=null)
+        claseHolder.tvCantHorario.setText(
+                String.valueOf(claseList.get(i).getHorarioList().size()));
     }
 
     @Override
@@ -65,11 +80,14 @@ public class RvAdapter extends RecyclerView.Adapter<RvAdapter.ClaseHolder> {
     {
         private TextView tvNombre;
         private TextView tvCredito;
+        private  TextView tvCantHorario;
         private Button btBorrar;
         private Button btEditar;
+        private Button btHorario;
 
         public ClaseHolder(@NonNull View itemView) {
             super(itemView);
+            tvCantHorario= itemView.findViewById(R.id.tvCantHorario);
             tvCredito=itemView.findViewById(R.id.tvCredito);
             tvNombre=itemView.findViewById(R.id.tvNombre);
             btBorrar= itemView.findViewById(R.id.btBorrar);
@@ -86,6 +104,14 @@ public class RvAdapter extends RecyclerView.Adapter<RvAdapter.ClaseHolder> {
                 @Override
                 public void onClick(View v) {
                     onClickEditItemListener.onItemClick(claseList.get(getAdapterPosition()),getAdapterPosition());
+                }
+            });
+
+            btHorario= itemView.findViewById(R.id.btHorario);
+            btHorario.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickItemListener.onItemClick(claseList.get(getAdapterPosition()).getClase(), getAdapterPosition());
                 }
             });
         }

@@ -7,6 +7,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 import com.cam.roomappexample.obj.Clase;
+import com.cam.roomappexample.pojo.ClaseConHorario;
 
 import java.util.List;
 
@@ -26,9 +27,8 @@ public interface ClaseDao {
     Long Insertar(Clase clase);
 
     @Query("SELECT * FROM clase")
-    List<Clase> ObtenerTodo();
+    List<ClaseConHorario> ObtenerTodo();
 
     @Query("SELECT * from clase where nombre=:nombre")
     List<Clase> ObtenerPorNombre(String nombre);
-
 }

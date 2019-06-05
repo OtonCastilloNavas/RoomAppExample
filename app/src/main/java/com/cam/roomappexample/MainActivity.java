@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.cam.roomappexample.adapter.RvAdapter;
 import com.cam.roomappexample.db.DbHorario;
 import com.cam.roomappexample.obj.Clase;
+import com.cam.roomappexample.obj.Horario;
+import com.cam.roomappexample.pojo.ClaseConHorario;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private DbHorario db;
-    private List<Clase> claseList = new ArrayList<>();
+    private List<ClaseConHorario> claseList = new ArrayList<>();
     private RvAdapter adapter;
 
     @Override
@@ -45,14 +47,14 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RvAdapter(claseList);
         adapter.setOnClickDeleteItemListener(new RvAdapter.OnClickDeleteItemListener() {
             @Override
-            public void onItemClick(final Clase clase, final int pos) {
+            public void onItemClick(final ClaseConHorario clase, final int pos) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setMessage("Desea eliminar "+ clase.getNombre() +"?");
+                builder.setMessage("Desea eliminar "+ clase.getClase().getNombre() +"?");
                 builder.setNegativeButton("No",null);
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        db.claseDao().Borrar(clase);
+                        db.claseDao().Borrar(clase.getClase());
                         claseList.remove(clase);
                         Toast.makeText(MainActivity.this, "Eliminado!", Toast.LENGTH_SHORT).show();
                         adapter.notifyItemRemoved(pos);
@@ -66,22 +68,64 @@ public class MainActivity extends AppCompatActivity {
 
         adapter.setOnClickEditItemListener(new RvAdapter.OnClickEditItemListener() {
             @Override
-            public void onItemClick(Clase clase,int pos) {
+            public void onItemClick(ClaseConHorario clase,int pos) {
                 showForm(clase,pos);
             }
         });
+
+        adapter.setOnClickItemListener(new RvAdapter.OnClickItemListener() {
+            @Override
+            public void onItemClick(final Clase clase, final int pos) {
+               // Toast.makeText(MainActivity.this, clase.getNombre(), Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(clase.getNombre());
+                final View view = LayoutInflater.from(MainActivity.this)
+                        .inflate(R.layout.dialog_horario,null,false);
+                builder.setView(view);
+                builder.setNegativeButton("cancelar",null);
+                builder.setPositiveButton("guardar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EditText etLugar=view.findViewById(R.id.etLugar);
+                        EditText etHora=view.findViewById(R.id.etHora);
+                        EditText etDia=view.findViewById(R.id.etDia);
+
+                        Horario horario = new Horario();
+                        horario.setLugar(etLugar.getText().toString());
+                        horario.setHora(etHora.getText().toString());
+                        horario.setDia(etDia.getText().toString());
+                        horario.setId_asignatura(clase.get_id());
+                        try {
+                            db.horarioDao().insertar(horario);
+                            Toast.makeText(MainActivity.this, "Horario guardado!",
+                                    Toast.LENGTH_SHORT).show();
+                            claseList.get(pos).getHorarioList().add(horario);
+                            adapter.notifyDataSetChanged();
+                        }
+                        catch (SQLiteConstraintException e)
+                        {
+                            Toast.makeText(MainActivity.this, "Error \n" +e.getMessage()
+                                    , Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
         rvClases.setAdapter(adapter);
     }
 
-    private void showForm(final Clase clase, final int pos)
+    private void showForm(final ClaseConHorario clase, final int pos)
     {
         LayoutInflater inflater= LayoutInflater.from(MainActivity.this);
         View view= inflater.inflate(R.layout.dialog_form_clase,null,false);
         final EditText etNombre=view.findViewById(R.id.etNombre);
         final EditText etCredito= view.findViewById(R.id.etCredito);
         if(pos>-1) {
-            etCredito.setText(String.valueOf(clase.getCredito()));
-            etNombre.setText(clase.getNombre());
+            etCredito.setText(String.valueOf(clase.getClase().getCredito()));
+            etNombre.setText(clase.getClase().getNombre());
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Clase");
@@ -91,11 +135,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                clase.setNombre(etNombre.getText().toString());
-                clase.setCredito(Integer.valueOf(etCredito.getText().toString()));
+                clase.getClase().setNombre(etNombre.getText().toString());
+                clase.getClase().setCredito(Integer.valueOf(etCredito.getText().toString()));
                 if(pos>-1) {
                     try {
-                        db.claseDao().Actualizar(clase);
+                        db.claseDao().Actualizar(clase.getClase());
                         adapter.notifyItemChanged(pos);
                     }
                     catch (SQLiteConstraintException e)
@@ -107,7 +151,8 @@ public class MainActivity extends AppCompatActivity {
                 else
                 {
                     try {
-                        db.claseDao().Insertar(clase);
+                        Long id=db.claseDao().Insertar(clase.getClase());
+                        clase.getClase().set_id(id.intValue());
                         claseList.add(0,clase);
                         adapter.notifyItemInserted(0);
                     }
@@ -133,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        showForm(new Clase(),-1);
+        showForm(new ClaseConHorario(),-1);
         return super.onOptionsItemSelected(item);
     }
 }
