@@ -28,7 +28,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private DbHorario db;
+
     private List<ClaseConHorario> claseList = new ArrayList<>();
     private RvAdapter adapter;
 
@@ -37,9 +37,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        db= Room.databaseBuilder(getApplicationContext(),
-                DbHorario.class, "horario").allowMainThreadQueries().build();
-        claseList.addAll(db.claseDao().ObtenerTodo());
+
+        claseList.addAll(DbHorario.getAppDatabase(this).claseDao().ObtenerTodo());
         final RecyclerView rvClases= findViewById(R.id.rvClases);
 
         LinearLayoutManager manager = new LinearLayoutManager(this);
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        db.claseDao().Borrar(clase.getClase());
+                        DbHorario.getAppDatabase(MainActivity.this).claseDao().Borrar(clase.getClase());
                         claseList.remove(clase);
                         Toast.makeText(MainActivity.this, "Eliminado!", Toast.LENGTH_SHORT).show();
                         adapter.notifyItemRemoved(pos);
@@ -96,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                         horario.setDia(etDia.getText().toString());
                         horario.setId_asignatura(clase.get_id());
                         try {
-                            db.horarioDao().insertar(horario);
+                            DbHorario.getAppDatabase(MainActivity.this).horarioDao().insertar(horario);
                             Toast.makeText(MainActivity.this, "Horario guardado!",
                                     Toast.LENGTH_SHORT).show();
                             claseList.get(pos).getHorarioList().add(horario);
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 clase.getClase().setCredito(Integer.valueOf(etCredito.getText().toString()));
                 if(pos>-1) {
                     try {
-                        db.claseDao().Actualizar(clase.getClase());
+                        DbHorario.getAppDatabase(MainActivity.this).claseDao().Actualizar(clase.getClase());
                         adapter.notifyItemChanged(pos);
                     }
                     catch (SQLiteConstraintException e)
@@ -151,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 else
                 {
                     try {
-                        Long id=db.claseDao().Insertar(clase.getClase());
+                        Long id=DbHorario.getAppDatabase(MainActivity.this).claseDao().Insertar(clase.getClase());
                         clase.getClase().set_id(id.intValue());
                         claseList.add(0,clase);
                         adapter.notifyItemInserted(0);
